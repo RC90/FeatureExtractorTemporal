@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		395BDF941AAB9AC2005E3E8A /* LBP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 395BDF921AAB9AC2005E3E8A /* LBP.cpp */; };
 		39F2C9D11AAB466C0073CD02 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39F2C9D01AAB466C0073CD02 /* main.cpp */; };
 		39F2C9D91AAB4ACF0073CD02 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9D71AAB4ACF0073CD02 /* libboost_filesystem.a */; };
 		39F2C9DA1AAB4ACF0073CD02 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9D81AAB4ACF0073CD02 /* libboost_system.a */; };
@@ -30,6 +31,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		395BDF921AAB9AC2005E3E8A /* LBP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LBP.cpp; sourceTree = "<group>"; };
+		395BDF931AAB9AC2005E3E8A /* LBP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LBP.h; sourceTree = "<group>"; };
 		39F2C9CD1AAB466C0073CD02 /* FeatureExtractorTemporal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FeatureExtractorTemporal; sourceTree = BUILT_PRODUCTS_DIR; };
 		39F2C9D01AAB466C0073CD02 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		39F2C9D71AAB4ACF0073CD02 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../Boost/boost_1_57_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
@@ -80,6 +83,8 @@
 		39F2C9CF1AAB466C0073CD02 /* FeatureExtractorTemporal */ = {
 			isa = PBXGroup;
 			children = (
+				395BDF921AAB9AC2005E3E8A /* LBP.cpp */,
+				395BDF931AAB9AC2005E3E8A /* LBP.h */,
 				39F2C9E51AAB63B80073CD02 /* gabor.cpp */,
 				39F2C9E61AAB63B80073CD02 /* gabor.h */,
 				39F2C9D01AAB466C0073CD02 /* main.cpp */,
@@ -163,6 +168,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				395BDF941AAB9AC2005E3E8A /* LBP.cpp in Sources */,
 				39F2C9D11AAB466C0073CD02 /* main.cpp in Sources */,
 				39F2C9E71AAB63B80073CD02 /* gabor.cpp in Sources */,
 			);
@@ -302,6 +308,7 @@
 				39F2C9D61AAB466C0073CD02 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
