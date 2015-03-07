@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		39F2C9D11AAB466C0073CD02 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39F2C9D01AAB466C0073CD02 /* main.cpp */; };
+		39F2C9D91AAB4ACF0073CD02 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9D71AAB4ACF0073CD02 /* libboost_filesystem.a */; };
+		39F2C9DA1AAB4ACF0073CD02 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9D81AAB4ACF0073CD02 /* libboost_system.a */; };
+		39F2C9DF1AAB50E20073CD02 /* libopencv_core.2.4.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9DB1AAB50E20073CD02 /* libopencv_core.2.4.9.dylib */; };
+		39F2C9E01AAB50E20073CD02 /* libopencv_highgui.2.4.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9DC1AAB50E20073CD02 /* libopencv_highgui.2.4.9.dylib */; };
+		39F2C9E11AAB50E20073CD02 /* libopencv_imgproc.2.4.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9DD1AAB50E20073CD02 /* libopencv_imgproc.2.4.9.dylib */; };
+		39F2C9E21AAB50E20073CD02 /* libopencv_objdetect.2.4.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F2C9DE1AAB50E20073CD02 /* libopencv_objdetect.2.4.9.dylib */; };
+		39F2C9E71AAB63B80073CD02 /* gabor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39F2C9E51AAB63B80073CD02 /* gabor.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +32,14 @@
 /* Begin PBXFileReference section */
 		39F2C9CD1AAB466C0073CD02 /* FeatureExtractorTemporal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FeatureExtractorTemporal; sourceTree = BUILT_PRODUCTS_DIR; };
 		39F2C9D01AAB466C0073CD02 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		39F2C9D71AAB4ACF0073CD02 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../Boost/boost_1_57_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
+		39F2C9D81AAB4ACF0073CD02 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../Boost/boost_1_57_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
+		39F2C9DB1AAB50E20073CD02 /* libopencv_core.2.4.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.9.dylib; path = ../OpenCV/lib/libopencv_core.2.4.9.dylib; sourceTree = "<group>"; };
+		39F2C9DC1AAB50E20073CD02 /* libopencv_highgui.2.4.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.2.4.9.dylib; path = ../OpenCV/lib/libopencv_highgui.2.4.9.dylib; sourceTree = "<group>"; };
+		39F2C9DD1AAB50E20073CD02 /* libopencv_imgproc.2.4.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.2.4.9.dylib; path = ../OpenCV/lib/libopencv_imgproc.2.4.9.dylib; sourceTree = "<group>"; };
+		39F2C9DE1AAB50E20073CD02 /* libopencv_objdetect.2.4.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_objdetect.2.4.9.dylib; path = ../OpenCV/lib/libopencv_objdetect.2.4.9.dylib; sourceTree = "<group>"; };
+		39F2C9E51AAB63B80073CD02 /* gabor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gabor.cpp; sourceTree = "<group>"; };
+		39F2C9E61AAB63B80073CD02 /* gabor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gabor.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +47,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				39F2C9DF1AAB50E20073CD02 /* libopencv_core.2.4.9.dylib in Frameworks */,
+				39F2C9E01AAB50E20073CD02 /* libopencv_highgui.2.4.9.dylib in Frameworks */,
+				39F2C9E11AAB50E20073CD02 /* libopencv_imgproc.2.4.9.dylib in Frameworks */,
+				39F2C9E21AAB50E20073CD02 /* libopencv_objdetect.2.4.9.dylib in Frameworks */,
+				39F2C9D91AAB4ACF0073CD02 /* libboost_filesystem.a in Frameworks */,
+				39F2C9DA1AAB4ACF0073CD02 /* libboost_system.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +62,8 @@
 		39F2C9C41AAB466C0073CD02 = {
 			isa = PBXGroup;
 			children = (
+				39F2C9E31AAB53650073CD02 /* OpenCV */,
+				39F2C9E41AAB536C0073CD02 /* Boost */,
 				39F2C9CF1AAB466C0073CD02 /* FeatureExtractorTemporal */,
 				39F2C9CE1AAB466C0073CD02 /* Products */,
 			);
@@ -57,9 +80,31 @@
 		39F2C9CF1AAB466C0073CD02 /* FeatureExtractorTemporal */ = {
 			isa = PBXGroup;
 			children = (
+				39F2C9E51AAB63B80073CD02 /* gabor.cpp */,
+				39F2C9E61AAB63B80073CD02 /* gabor.h */,
 				39F2C9D01AAB466C0073CD02 /* main.cpp */,
 			);
 			path = FeatureExtractorTemporal;
+			sourceTree = "<group>";
+		};
+		39F2C9E31AAB53650073CD02 /* OpenCV */ = {
+			isa = PBXGroup;
+			children = (
+				39F2C9DB1AAB50E20073CD02 /* libopencv_core.2.4.9.dylib */,
+				39F2C9DC1AAB50E20073CD02 /* libopencv_highgui.2.4.9.dylib */,
+				39F2C9DD1AAB50E20073CD02 /* libopencv_imgproc.2.4.9.dylib */,
+				39F2C9DE1AAB50E20073CD02 /* libopencv_objdetect.2.4.9.dylib */,
+			);
+			name = OpenCV;
+			sourceTree = "<group>";
+		};
+		39F2C9E41AAB536C0073CD02 /* Boost */ = {
+			isa = PBXGroup;
+			children = (
+				39F2C9D71AAB4ACF0073CD02 /* libboost_filesystem.a */,
+				39F2C9D81AAB4ACF0073CD02 /* libboost_system.a */,
+			);
+			name = Boost;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,6 +164,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				39F2C9D11AAB466C0073CD02 /* main.cpp in Sources */,
+				39F2C9E71AAB63B80073CD02 /* gabor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +248,18 @@
 		39F2C9D51AAB466C0073CD02 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LIBRARY = "libstdc++";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/Users/timur/Documents/Boost/boost_1_57_0,
+					/Users/timur/Documents/OpenCV/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/timur/Documents/Boost/boost_1_57_0/stage/lib,
+					/Users/timur/Documents/OpenCV/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -209,6 +267,18 @@
 		39F2C9D61AAB466C0073CD02 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LIBRARY = "libstdc++";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/Users/timur/Documents/Boost/boost_1_57_0,
+					/Users/timur/Documents/OpenCV/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/timur/Documents/Boost/boost_1_57_0/stage/lib,
+					/Users/timur/Documents/OpenCV/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
