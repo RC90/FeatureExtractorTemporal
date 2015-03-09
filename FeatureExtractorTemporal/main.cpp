@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
     
     fs::path logPath = output;
     logPath /= "errors.log";
-    remove(logPath.c_str());
+    remove(logPath.string().c_str());
     errorLog.open(logPath.c_str());
     cout << " *** Error log file path: " << logPath << endl;
     
@@ -287,7 +287,7 @@ int main(int argc, char **argv) {
             sname.append(".dat");
             fs::path outputPath = output;
             outputPath /= sname;
-            remove(outputPath.c_str());
+            remove(outputPath.string().c_str());
             cout << " *** Output path is: " << outputPath << endl;
             
             LoadImages(filepath);
