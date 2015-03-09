@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0077A7B1-7EDF-4AB1-B06D-AD6D95E5E7E4</string>
+	<key>IDESourceControlProjectName</key>
+	<string>FeatureExtractorTemporal</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>120610521323FA85973D471C6132CF84AA6F3839</key>
+		<string>https://github.com/RC90/FeatureExtractorTemporal.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>FeatureExtractorTemporal.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>120610521323FA85973D471C6132CF84AA6F3839</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/RC90/FeatureExtractorTemporal.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>120610521323FA85973D471C6132CF84AA6F3839</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>120610521323FA85973D471C6132CF84AA6F3839</string>
+			<key>IDESourceControlWCCName</key>
+			<string>FeatureExtractorTemporal</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -139,6 +139,36 @@ void SaveHistogram(int nfeatures, fs::path outputPath) {
     file.close();
 }
 
+void ComposeBlocksNonOverlapping (fs::path outputPath) {
+    cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
+    int nblocks = 0;
+    int nfeatures = (int)filters.size() * HSEGMENTS * WSEGMENTS * UNIFORM * 3;
+    vector<cv::Mat> block;
+    for (int i = 0; i < imgs.size(); i++) {
+        if (!imgs[i].success) {
+            block.clear();
+            continue;
+        }
+        
+        if (block.size() < TEMPORALWINDOW) {
+            block.push_back(imgs[i].img);
+        }
+        
+        if (block.size() == TEMPORALWINDOW) {
+            findex = 0;
+            features = new float[nfeatures];
+            fill(features, features + nfeatures, 0);
+            
+            nblocks++;
+            FilterImages(block);
+            SaveHistogram(nfeatures, outputPath);
+            block.clear();
+            delete []features;
+        }
+    }
+    cout << " *** " << nblocks << " blocks processed out of " << imgs.size() << " images " << endl;
+}
+
 void ComposeBlocks (fs::path outputPath) {
     cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
     int nblocks = 0;
@@ -261,7 +291,7 @@ int main(int argc, char **argv) {
             
             LoadImages(filepath);
             CheckForBadFaceDetections();
-            ComposeBlocks(outputPath);
+            ComposeBlocksNonOverlapping(outputPath);
         }
     }
     
