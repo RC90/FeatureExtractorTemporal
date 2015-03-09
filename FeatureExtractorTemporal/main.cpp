@@ -143,25 +143,26 @@ void ComposeBlocksNonOverlapping (fs::path outputPath) {
     cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
     int nblocks = 0;
     int nfeatures = (int)filters.size() * HSEGMENTS * WSEGMENTS * UNIFORM * 3;
+    bool blockCompromised = false;
     vector<cv::Mat> block;
     for (int i = 0; i < imgs.size(); i++) {
-        if (!imgs[i].success) {
-            block.clear();
-            continue;
-        }
+        if (!imgs[i].success)
+            blockCompromised = true;
         
-        if (block.size() < TEMPORALWINDOW) {
-            block.push_back(imgs[i].img);
-        }
+        block.push_back(imgs[i].img);
         
         if (block.size() == TEMPORALWINDOW) {
+            nblocks++;
+            
             findex = 0;
             features = new float[nfeatures];
             fill(features, features + nfeatures, 0);
             
-            nblocks++;
-            FilterImages(block);
+            if (!blockCompromised)
+                FilterImages(block);
+            
             SaveHistogram(nfeatures, outputPath);
+            blockCompromised = false;
             block.clear();
             delete []features;
         }
