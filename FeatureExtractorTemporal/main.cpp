@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
             
             LoadImages(filepath);
             CheckForBadFaceDetections();
-            ComposeBlocksNonOverlapping(outputPath);
+            ComposeBlocks(outputPath);
         }
     }
     
