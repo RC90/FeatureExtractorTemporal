@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "tinyxml2.h"
 #include "gabor.h"
 #include "LBP.h"
 
@@ -21,6 +22,7 @@ struct Image
 };
 
 using namespace std;
+using namespace tinyxml2;
 namespace fs = boost::filesystem;
 
 ofstream errorLog;
@@ -218,84 +220,216 @@ void CheckForBadFaceDetections () {
     cout << " *** Checked " << imgs.size() << " lines, " << failures << " empty images found" << endl;
 }
 
-void LoadImages (fs::path filename) {
-    cout << " *** Loading images ... " << endl;
-    ifstream file(filename.c_str());
-    string line;
-    imgs.clear();
-    int counter = 0;
-    int failures = 0;
-    while (getline(file, line))
-    {
-        Image image;
-        image.img = cv::imread(line, CV_LOAD_IMAGE_GRAYSCALE);
-        if(!image.img.data || image.img.empty()) {
-            errorLog << "WARNING - Could not open image: \"" << line << "\"" << endl;
-            image.success = false;
-            failures++;
-        } else {
-            image.success = true;
-            
-//            cv::imshow("Images", image.img);
-//            cv::waitKey(1);
-        }
-        imgs.push_back(image);
-        counter++;
-    }
-    cout << " *** Processed " << counter << " lines, " << failures << " images failed to read" << endl;
-}
+void LoadImages (fs::path sessionPath, XMLElement *session);
 
 int main(int argc, char **argv) {
     
-    if (argc < 3) {
-        cerr << endl << " *** ERROR - Please specify input and output paths. " << endl << endl;
+    if (argc < 4) {
+        cerr << endl << " *** ERROR - Please specify all required runtime arguments. " << endl << endl;
         return -1;
     }
     
-    fs::path input(argv[1]);
-    fs::path output(argv[2]);
+    fs::path rootPath	(argv[1]);
+    fs::path xmlPath	(argv[2]);
+    fs::path outputPath	(argv[3]);
     
-    if (!fs::exists(input)) {
-        cerr << endl << " *** ERROR - Input path " << input << " does not exist. " << endl << endl;
+    if (!fs::exists(rootPath)) {
+        cerr << endl << " *** ERROR - Root path " << rootPath << " does not exist. " << endl << endl;
         return -1;
     }
     
-    if (!fs::exists(output)) {
-        cerr << endl << " *** ERROR - Output path " << output << " does not exist. " << endl << endl;
+    if (!fs::exists(xmlPath)) {
+        cerr << endl << " *** ERROR - XML path " << xmlPath << " does not exist. " << endl << endl;
         return -1;
     }
     
-    cout << endl << " *** Input path: " << input << endl;
-    cout << " *** Output path: " << output << endl;
+    if (!fs::exists(outputPath)) {
+        cerr << endl << " *** ERROR - Output path " << outputPath << " does not exist. " << endl << endl;
+        return -1;
+    }
     
-    fs::path logPath = output;
+    cout << endl << " *** Root path: " << rootPath << endl;
+    cout << " *** XML path: " << xmlPath << endl;
+    cout << " *** Output path: " << outputPath << endl;
+    
+    fs::path logPath = outputPath;
     logPath /= "errors.log";
     remove(logPath.string().c_str());
     errorLog.open(logPath.c_str());
     cout << " *** Error log file path: " << logPath << endl;
     
     InitFilters();
-    fs::directory_iterator end_iter;
-    for (fs::directory_iterator dir_iter(input) ; dir_iter != end_iter ; ++dir_iter)
+	fs::path databasePath = rootPath;
+
+	XMLDocument doc;
+	doc.LoadFile(xmlPath.c_str());
+	if (doc.ErrorID() != 0) {
+        cerr << " *** ERROR - Unable to open XML at " << xmlPath << " *** " << endl;
+        return -1;
+	}
+	
+	XMLElement *root = NULL;
+	root = doc.FirstChildElement("Database");
+    if (!root) {
+        cerr << " *** ERROR - Null pointer to the root element at " << xmlPath << " *** " << endl;
+        return -1;
+	}
+	
+	string DBName;
+    const char *dn = root->Attribute("Name");
+    if (dn != 0) {
+        DBName = string(dn);
+    } else {
+        errorLog << "WARNING - Unable to read database name at " << xmlPath << endl;
+        return -1;
+    }
+    
+	string DBRelativePath;
+    const char *dp = root->Attribute("RelativePath");
+    if (dp != 0) {
+        DBRelativePath = string(dp);
+    } else {
+        errorLog << "WARNING - Unable to read database path at " << xmlPath << endl;
+        return -1;
+    }
+    databasePath /= DBRelativePath;
+    
+	XMLElement *subject = NULL;
+	subject = root->FirstChildElement("Subject");
+    if (!subject) {
+        errorLog << "WARNING - No subject nodes found at " << xmlPath << endl;
+        return -1;
+    }
+    
+    while (subject)
     {
-        fs::path filepath = dir_iter->path();
-        string extension = fs::extension(filepath.string());
-        if (extension.compare(".txt") == 0) {
-            cout << endl << " *** Processing " << filepath << ":" << endl;
-            
-            string sname = filepath.stem().string();
-            sname.append(".dat");
-            fs::path outputPath = output;
-            outputPath /= sname;
-            remove(outputPath.string().c_str());
-            cout << " *** Output path is: " << outputPath << endl;
-            
-            LoadImages(filepath);
-            CheckForBadFaceDetections();
-            ComposeBlocks(outputPath);
+    	string SubjectName;
+    	const char *st = subject->Attribute("Name");
+        if (st != 0) {
+            SubjectName = string(st);
+        } else {
+            errorLog << "WARNING - Unable to read subject name at " << xmlPath << endl;
+            subject = subject->NextSiblingElement("Subject");
+            continue;
         }
+        
+        string SubjectRelativePath;
+    	const char *sp = subject->Attribute("RelativePath");
+        if (sp != 0) {
+            SubjectRelativePath = string(sp);
+        } else {
+            errorLog << "WARNING - Unable to read subject relative path at " << xmlPath << endl;
+            subject = subject->NextSiblingElement("Subject");
+            continue;
+        }
+        fs::path subjectPath = databasePath;
+        subjectPath /= SubjectRelativePath;
+        
+        XMLElement *session = NULL;
+		session = subject->FirstChildElement("Session");
+    	if (!session) {
+        	errorLog << "WARNING - No session nodes found at " << xmlPath << endl;
+        	return -1;
+    	}
+        
+        while (session) 
+        {
+        	string SessionName;
+    		const char *ssn = session->Attribute("Name");
+        	if (ssn != 0) {
+            	SessionName = string(ssn);
+        	} else {
+            	errorLog << "WARNING - Unable to read session name at " << xmlPath << endl;
+            	session = session->NextSiblingElement("Session");
+            	continue;
+        	}
+        	
+        	string SessionRelativePath;
+    		const char *ssp = session->Attribute("RelativePath");
+        	if (ssp != 0) {
+            	SessionRelativePath = string(ssp);
+        	} else {
+            	errorLog << "WARNING - Unable to read session relative path at " << xmlPath << endl;
+            	session = session->NextSiblingElement("Session");
+            	continue;
+        	}
+        	
+        	fs::path sessionPath = subjectPath;
+        	sessionPath /= SessionRelativePath;
+        
+        	string ofilename = DBName;
+        	ofilename.append(".");
+        	ofilename.append(SubjectName);
+        	ofilename.append(".");
+        	ofilename.append(SessionName);
+        	
+        	cout << endl << " *** Processing " << ofilename << ":" << endl;
+        	ofilename.append(".dat");
+        	
+        	fs::path opath = outputPath;
+        	opath /= ofilename;
+        	remove(opath.string().c_str());
+        	cout << " *** Output path is: " << opath << endl;
+        
+        	LoadImages (sessionPath, session);
+        	CheckForBadFaceDetections();
+        	ComposeBlocks(opath);
+        
+        	session = session->NextSiblingElement("Session");
+        }
+        
+        subject = subject->NextSiblingElement("Subject");
     }
     
     errorLog.close();
     return 0;
+}
+
+void LoadImages (fs::path sessionPath, XMLElement *session)
+{
+	cout << " *** Loading images ... " << endl;
+	imgs.clear();
+	int counter = 0;
+    int failures = 0;
+    
+	XMLElement *imageXML = NULL;
+	imageXML = session->FirstChildElement("Image");
+    if (!imageXML) {
+       	errorLog << "WARNING - No image nodes found at " << sessionPath << endl;
+       	return;
+    }
+    
+    while (imageXML)
+    {
+    	string ImageFileName;
+    	const char *ifn = imageXML->Attribute("Filename");
+        if (ifn != 0) {
+         	ImageFileName = string(ifn);
+        } else {
+           	errorLog << "WARNING - Unable to read image filename at " << sessionPath << endl;
+           	imageXML = imageXML->NextSiblingElement("Image");
+           	continue;
+        }
+
+		fs::path ImagePath = sessionPath;
+		ImagePath /= ImageFileName;
+		
+		Image image;
+        image.img = cv::imread(ImagePath.string(), CV_LOAD_IMAGE_GRAYSCALE);
+        if(!image.img.data || image.img.empty()) {
+            errorLog << "WARNING - Could not open image: " << ImagePath << endl;
+            image.success = false;
+            failures++;
+        } else {
+            image.success = true;
+            
+//            	cv::imshow("Images", image.img);
+//            	cv::waitKey(1);
+        }
+        imgs.push_back(image);
+        counter++;
+    
+    	imageXML = imageXML->NextSiblingElement("Image");
+    }
+	cout << " *** Processed " << counter << " lines, " << failures << " images failed to read" << endl;
 }
