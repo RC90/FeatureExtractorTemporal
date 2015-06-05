@@ -220,7 +220,7 @@ void CheckForBadFaceDetections () {
     cout << " *** Checked " << imgs.size() << " lines, " << failures << " empty images found" << endl;
 }
 
-void LoadImages (fs::path sessionPath, XMLElement *session);
+void LoadImages (fs::path sessionPath, XMLElement *session, string extension);
 
 int main(int argc, char **argv) {
     
@@ -229,12 +229,16 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    fs::path rootPath	(argv[1]);
+    fs::path dataPath	(argv[1]);
     fs::path xmlPath	(argv[2]);
     fs::path outputPath	(argv[3]);
     
-    if (!fs::exists(rootPath)) {
-        cerr << endl << " *** ERROR - Root path " << rootPath << " does not exist. " << endl << endl;
+    string extension = ".bmp";
+    if (argc == 5) 
+		extension = string(argv[4]);
+    
+    if (!fs::exists(dataPath)) {
+        cerr << endl << " *** ERROR - Data path " << dataPath << " does not exist. " << endl << endl;
         return -1;
     }
     
@@ -248,9 +252,10 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    cout << endl << " *** Root path: " << rootPath << endl;
+    cout << endl << " *** Data path: " << dataPath << endl;
     cout << " *** XML path: " << xmlPath << endl;
     cout << " *** Output path: " << outputPath << endl;
+    cout << " *** Extension: \"" << extension << "\"" << endl;
     
     fs::path logPath = outputPath;
     logPath /= "errors.log";
@@ -259,7 +264,7 @@ int main(int argc, char **argv) {
     cout << " *** Error log file path: " << logPath << endl;
     
     InitFilters();
-	fs::path databasePath = rootPath;
+	fs::path databasePath = dataPath;
 
 	XMLDocument doc;
 	doc.LoadFile(xmlPath.c_str());
@@ -283,17 +288,7 @@ int main(int argc, char **argv) {
         errorLog << "WARNING - Unable to read database name at " << xmlPath << endl;
         return -1;
     }
-    
-	string DBRelativePath;
-    const char *dp = root->Attribute("RelativePath");
-    if (dp != 0) {
-        DBRelativePath = string(dp);
-    } else {
-        errorLog << "WARNING - Unable to read database path at " << xmlPath << endl;
-        return -1;
-    }
-    databasePath /= DBRelativePath;
-    
+       
 	XMLElement *subject = NULL;
 	subject = root->FirstChildElement("Subject");
     if (!subject) {
@@ -371,7 +366,7 @@ int main(int argc, char **argv) {
         	remove(opath.string().c_str());
         	cout << " *** Output path is: " << opath << endl;
         
-        	LoadImages (sessionPath, session);
+        	LoadImages (sessionPath, session, extension);
         	CheckForBadFaceDetections();
         	ComposeBlocks(opath);
         
@@ -385,7 +380,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void LoadImages (fs::path sessionPath, XMLElement *session)
+void LoadImages (fs::path sessionPath, XMLElement *session, string extension)
 {
 	cout << " *** Loading images ... " << endl;
 	imgs.clear();
@@ -402,7 +397,7 @@ void LoadImages (fs::path sessionPath, XMLElement *session)
     while (imageXML)
     {
     	string ImageFileName;
-    	const char *ifn = imageXML->Attribute("Filename");
+    	const char *ifn = imageXML->Attribute("Name");
         if (ifn != 0) {
          	ImageFileName = string(ifn);
         } else {
@@ -410,6 +405,7 @@ void LoadImages (fs::path sessionPath, XMLElement *session)
            	imageXML = imageXML->NextSiblingElement("Image");
            	continue;
         }
+        ImageFileName.append(extension);
 
 		fs::path ImagePath = sessionPath;
 		ImagePath /= ImageFileName;
