@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+
 #include <boost/filesystem.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -30,6 +31,14 @@ vector<Image> imgs;
 vector<Gabor> filters;
 float* features = NULL;
 int findex = 0;
+string ftype;
+string extension;
+
+void LoadImages ( fs::path sessionPath, XMLElement *session, string extension );
+int ParseMetadata ( fs::path xmlPath, fs::path dataPath, fs::path outputPath );
+int ParseSubjects ( XMLElement *subject, fs::path xmlPath, fs::path dataPath, fs::path outputPath, const string &DBName );
+int ParseSessions ( XMLElement *session, fs::path xmlPath, fs::path subjectPath, fs::path outputPath, const string &DBName, const string &SubjectName );
+int ProcessSession ( XMLElement *session, fs::path sessionPath, fs::path outputPath, const string &DBName, const string &SubjectName, const string &SessionName );
 
 void InitFilters() {
     filters.push_back(Gabor("Filter_01", 0,   5, 90,   90));
@@ -220,11 +229,16 @@ void CheckForBadFaceDetections () {
     cout << " *** Checked " << imgs.size() << " lines, " << failures << " empty images found" << endl;
 }
 
-void LoadImages (fs::path sessionPath, XMLElement *session, string extension);
-
 int main(int argc, char **argv) {
     
-    if (argc < 4) {
+    // Arguments:
+    // 1. Path to face images
+    // 2. Path to database metadata
+    // 3. Output features path
+    // 4. Features type: LBP, LBP-TOP, LGBP or LGBP-TOP
+    // 5. Images extension
+
+    if (argc < 5) {
         cerr << endl << " *** ERROR - Please specify all required runtime arguments. " << endl << endl;
         return -1;
     }
@@ -233,9 +247,8 @@ int main(int argc, char **argv) {
     fs::path xmlPath	(argv[2]);
     fs::path outputPath	(argv[3]);
     
-    string extension = ".bmp";
-    if (argc == 5) 
-		extension = string(argv[4]);
+    ftype = string(argv[4]);
+	extension = string(argv[5]);
     
     if (!fs::exists(dataPath)) {
         cerr << endl << " *** ERROR - Data path " << dataPath << " does not exist. " << endl << endl;
@@ -255,6 +268,7 @@ int main(int argc, char **argv) {
     cout << endl << " *** Data path: " << dataPath << endl;
     cout << " *** XML path: " << xmlPath << endl;
     cout << " *** Output path: " << outputPath << endl;
+    cout << " *** Feature type: \"" << ftype << "\"" << endl;
     cout << " *** Extension: \"" << extension << "\"" << endl;
     
     fs::path logPath = outputPath;
@@ -264,42 +278,86 @@ int main(int argc, char **argv) {
     cout << " *** Error log file path: " << logPath << endl;
     
     InitFilters();
-	fs::path databasePath = dataPath;
+    if (ParseMetadata(xmlPath, dataPath, outputPath) != 0) {
+        return -1;        
+    }
 
-	XMLDocument doc;
-	doc.LoadFile(xmlPath.c_str());
-	if (doc.ErrorID() != 0) {
-        cerr << " *** ERROR - Unable to open XML at " << xmlPath << " *** " << endl;
-        return -1;
-	}
-	
-	XMLElement *root = NULL;
-	root = doc.FirstChildElement("Database");
-    if (!root) {
-        cerr << " *** ERROR - Null pointer to the root element at " << xmlPath << " *** " << endl;
-        return -1;
-	}
-	
-	string DBName;
-    const char *dn = root->Attribute("Name");
-    if (dn != 0) {
-        DBName = string(dn);
-    } else {
-        errorLog << "WARNING - Unable to read database name at " << xmlPath << endl;
-        return -1;
+    errorLog.close();
+    return 0;
+}
+
+int ProcessSession ( XMLElement *session, fs::path sessionPath, fs::path outputPath, const string &DBName, const string &SubjectName, const string &SessionName ) {
+
+    string ofilename = DBName;
+    ofilename.append(".");
+    ofilename.append(SubjectName);
+    ofilename.append(".");
+    ofilename.append(SessionName);
+            
+    cout << endl << " *** Processing " << ofilename << ":" << endl;
+    ofilename.append(".dat");
+            
+    fs::path opath = outputPath;
+    opath /= ofilename;
+    remove(opath.string().c_str());
+    cout << " *** Output path is: " << opath << endl;
+        
+    LoadImages(sessionPath, session, extension);
+    CheckForBadFaceDetections();
+
+    if (ftype == "LGBP-TOP") {
+        ComposeBlocks(opath);   
+        return 0;
     }
-       
-	XMLElement *subject = NULL;
-	subject = root->FirstChildElement("Subject");
-    if (!subject) {
-        errorLog << "WARNING - No subject nodes found at " << xmlPath << endl;
-        return -1;
+
+    cerr << endl << " *** ERROR - Unknown feature type specified: " << ftype << endl << endl;
+    errorLog << "ERROR - Unknown feature type specified: " << ftype << endl;
+    return -1;
+}
+
+int ParseSessions ( XMLElement *session, fs::path xmlPath, fs::path subjectPath, fs::path outputPath, const string &DBName, const string &SubjectName ) {
+
+    while (session) 
+    {
+        string SessionName;
+        const char *ssn = session->Attribute("Name");
+        if (ssn != 0) {
+            SessionName = string(ssn);
+        } else {
+            errorLog << "WARNING - Unable to read session name at " << xmlPath << endl;
+            session = session->NextSiblingElement("Session");
+            continue;
+        }
+            
+        string SessionRelativePath;
+        const char *ssp = session->Attribute("RelativePath");
+        if (ssp != 0) {
+            SessionRelativePath = string(ssp);
+        } else {
+            errorLog << "WARNING - Unable to read session relative path at " << xmlPath << endl;
+            session = session->NextSiblingElement("Session");
+            continue;
+        }
+            
+        fs::path sessionPath = subjectPath;
+        sessionPath /= SessionRelativePath;
+        
+        if (ProcessSession( session, sessionPath, outputPath, DBName, SubjectName, SessionName ) != 0) {
+            return -1;
+        }
+        
+        session = session->NextSiblingElement("Session");
     }
-    
+
+    return 0;
+}
+
+int ParseSubjects ( XMLElement *subject, fs::path xmlPath, fs::path dataPath, fs::path outputPath, const string &DBName ) {
+
     while (subject)
     {
-    	string SubjectName;
-    	const char *st = subject->Attribute("Name");
+        string SubjectName;
+        const char *st = subject->Attribute("Name");
         if (st != 0) {
             SubjectName = string(st);
         } else {
@@ -309,7 +367,7 @@ int main(int argc, char **argv) {
         }
         
         string SubjectRelativePath;
-    	const char *sp = subject->Attribute("RelativePath");
+        const char *sp = subject->Attribute("RelativePath");
         if (sp != 0) {
             SubjectRelativePath = string(sp);
         } else {
@@ -317,71 +375,67 @@ int main(int argc, char **argv) {
             subject = subject->NextSiblingElement("Subject");
             continue;
         }
-        fs::path subjectPath = databasePath;
+        fs::path subjectPath = dataPath;
         subjectPath /= SubjectRelativePath;
         
         XMLElement *session = NULL;
-		session = subject->FirstChildElement("Session");
-    	if (!session) {
-        	errorLog << "WARNING - No session nodes found at " << xmlPath << endl;
-        	return -1;
-    	}
-        
-        while (session) 
-        {
-        	string SessionName;
-    		const char *ssn = session->Attribute("Name");
-        	if (ssn != 0) {
-            	SessionName = string(ssn);
-        	} else {
-            	errorLog << "WARNING - Unable to read session name at " << xmlPath << endl;
-            	session = session->NextSiblingElement("Session");
-            	continue;
-        	}
-        	
-        	string SessionRelativePath;
-    		const char *ssp = session->Attribute("RelativePath");
-        	if (ssp != 0) {
-            	SessionRelativePath = string(ssp);
-        	} else {
-            	errorLog << "WARNING - Unable to read session relative path at " << xmlPath << endl;
-            	session = session->NextSiblingElement("Session");
-            	continue;
-        	}
-        	
-        	fs::path sessionPath = subjectPath;
-        	sessionPath /= SessionRelativePath;
-        
-        	string ofilename = DBName;
-        	ofilename.append(".");
-        	ofilename.append(SubjectName);
-        	ofilename.append(".");
-        	ofilename.append(SessionName);
-        	
-        	cout << endl << " *** Processing " << ofilename << ":" << endl;
-        	ofilename.append(".dat");
-        	
-        	fs::path opath = outputPath;
-        	opath /= ofilename;
-        	remove(opath.string().c_str());
-        	cout << " *** Output path is: " << opath << endl;
-        
-        	LoadImages (sessionPath, session, extension);
-        	CheckForBadFaceDetections();
-        	ComposeBlocks(opath);
-        
-        	session = session->NextSiblingElement("Session");
+        session = subject->FirstChildElement("Session");
+        if (!session) {
+            errorLog << "WARNING - No session nodes found at " << xmlPath << endl;
+            return -1;
+        }
+
+        if (ParseSessions( session, xmlPath, subjectPath, outputPath, DBName, SubjectName) != 0) {
+            return -1;        
         }
         
         subject = subject->NextSiblingElement("Subject");
     }
-    
-    errorLog.close();
+
     return 0;
 }
 
-void LoadImages (fs::path sessionPath, XMLElement *session, string extension)
-{
+int ParseMetadata ( fs::path xmlPath, fs::path dataPath, fs::path outputPath ) {
+
+    XMLDocument doc;
+    doc.LoadFile(xmlPath.c_str());
+    if (doc.ErrorID() != 0) {
+        cerr << " *** ERROR - Unable to open XML at " << xmlPath << " *** " << endl;
+        return -1;
+    }
+    
+    XMLElement *root = NULL;
+    root = doc.FirstChildElement("Database");
+    if (!root) {
+        cerr << " *** ERROR - Null pointer to the root element at " << xmlPath << " *** " << endl;
+        return -1;
+    }
+    
+    string DBName;
+    const char *dn = root->Attribute("Name");
+    if (dn != 0) {
+        DBName = string(dn);
+    } else {
+        errorLog << "WARNING - Unable to read database name at " << xmlPath << endl;
+        return -1;
+    }
+       
+    XMLElement *subject = NULL;
+    subject = root->FirstChildElement("Subject");
+    if (!subject) {
+        errorLog << "WARNING - No subject nodes found at " << xmlPath << endl;
+        return -1;
+    }
+
+    cout << " *** Database: \"" << DBName << "\"" << endl;
+    if (ParseSubjects( subject, xmlPath, dataPath, outputPath, DBName ) != 0) {
+        return -1;        
+    }
+
+    return 0;
+}
+
+void LoadImages (fs::path sessionPath, XMLElement *session, string extension) {
 	cout << " *** Loading images ... " << endl;
 	imgs.clear();
 	int counter = 0;
@@ -419,8 +473,8 @@ void LoadImages (fs::path sessionPath, XMLElement *session, string extension)
         } else {
             image.success = true;
             
-//            	cv::imshow("Images", image.img);
-//            	cv::waitKey(1);
+           	// cv::imshow("Images", image.img);
+           	// cv::waitKey(1);
         }
         imgs.push_back(image);
         counter++;
