@@ -150,7 +150,7 @@ void SaveHistogram(int nfeatures, fs::path outputPath) {
     file.close();
 }
 
-void ComposeBlocksNonOverlapping (fs::path outputPath) {
+void ComposeLGBPTOPBlocksNonOverlapping (fs::path outputPath) {
     cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
     int nblocks = 0;
     int nfeatures = (int)filters.size() * HSEGMENTS * WSEGMENTS * UNIFORM * 3;
@@ -181,7 +181,7 @@ void ComposeBlocksNonOverlapping (fs::path outputPath) {
     cout << " *** " << nblocks << " blocks processed out of " << imgs.size() << " images " << endl;
 }
 
-void ComposeBlocks (fs::path outputPath) {
+void ComposeLGBPTOPBlocks (fs::path outputPath) {
     cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
     int nblocks = 0;
     int nfeatures = (int)filters.size() * HSEGMENTS * WSEGMENTS * UNIFORM * 3;
@@ -210,6 +210,57 @@ void ComposeBlocks (fs::path outputPath) {
         if (block.size() == TEMPORALWINDOW) {
             nblocks++;
             FilterImages(block);
+            SaveHistogram(nfeatures, outputPath);
+        }
+        delete []features;
+    }
+    cout << " *** " << nblocks << " blocks processed out of " << imgs.size() << " images " << endl;
+}
+
+void ComposeLBPTOPBlocks (fs::path outputPath) {
+    cout << " *** Processing blocks with temporal window " << TEMPORALWINDOW << " ... " << endl;
+    int nblocks = 0;
+    int nfeatures = HSEGMENTS * WSEGMENTS * UNIFORM * 3;
+    for (int i = 0; i < imgs.size(); i++) {
+        findex = 0;
+        features = new float[nfeatures];
+        fill(features, features + nfeatures, 0);
+        
+        int imagesLeft = (int)imgs.size() - i;
+        if (imagesLeft < TEMPORALWINDOW) {
+            SaveHistogram(nfeatures, outputPath);
+            delete []features;
+            continue;
+        }
+        
+        vector<cv::Mat> block;
+        for (int k = i; k < i + TEMPORALWINDOW; k++) {
+            if (imgs[k].success) {
+                block.push_back(imgs[k].img);
+            } else {
+                SaveHistogram(nfeatures, outputPath);
+                break;
+            }
+        }
+        
+        if (block.size() == TEMPORALWINDOW) {
+            nblocks++;
+
+            int stepWidth = block.front().cols / WSEGMENTS;
+            int stepHeight = block.front().rows / HSEGMENTS;
+            for (int k = 0; k < HSEGMENTS; k++) {
+                for (int n = 0; n < WSEGMENTS; n++) {
+                    vector<cv::Mat> segment;
+                    int startWidth = n * stepWidth;
+                    int startHeight = k * stepHeight;
+                    for (int m = 0; m < block.size(); m++) {
+                        cv::Mat cropppedImg = cv::Mat(block[m], cv::Rect(startWidth, startHeight, stepWidth, stepHeight));
+                        segment.push_back(cropppedImg);
+                    }
+                    ExtractFeatures(segment);
+                }
+            }
+
             SaveHistogram(nfeatures, outputPath);
         }
         delete []features;
@@ -305,8 +356,13 @@ int ProcessSession ( XMLElement *session, fs::path sessionPath, fs::path outputP
     LoadImages(sessionPath, session, extension);
     CheckForBadFaceDetections();
 
+    if (ftype == "LBP-TOP") {
+        ComposeLBPTOPBlocks(opath);   
+        return 0;
+    }
+
     if (ftype == "LGBP-TOP") {
-        ComposeBlocks(opath);   
+        ComposeLGBPTOPBlocks(opath);   
         return 0;
     }
 
