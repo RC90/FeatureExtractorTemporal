@@ -350,9 +350,14 @@ int ProcessSession ( XMLElement *session, fs::path sessionPath, fs::path outputP
             
     fs::path opath = outputPath;
     opath /= ofilename;
-    remove(opath.string().c_str());
+    // remove(opath.string().c_str());
     cout << " *** Output path is: " << opath << endl;
         
+    if (fs::exists(opath)) {
+        cout << " *** File existis. Skipping ... " << endl;
+        return 0;  
+    }
+
     LoadImages(sessionPath, session, extension);
     CheckForBadFaceDetections();
 
